@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Batcher</title>
+    <style>
+        /* Add your CSS styles here */
+    </style>
+</head>
+<body>
+    <div id="container">
+        <h1>File Batcher</h1>
+        <textarea id="input" rows="10" placeholder="Enter your data (one per line)"></textarea>
+        <label for="batchSize">Batch Size:</label>
+        <input type="number" id="batchSize" name="batchSize" value="500">
+        <button onclick="processDomains()">Process</button>
+        <button onclick="exportTableToExcel('results', 'domain_batches')">Export to Excel</button>
+
+        <table id="results">
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Batch Number</th>
+                </tr>
+            </thead>
+            <tbody id="resultBody">
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        function processDomains() {
+            const input = document.getElementById('input').value;
+            const domains = input.split('\n');
+            const batchSize = document.getElementById('batchSize').value;
+            const resultBody = document.getElementById('resultBody');
+
+            resultBody.innerHTML = '';
+
+            for (let i = 0; i < domains.length; i++) {
+                const batchNumber = Math.floor(i / batchSize) + 1;
+                const row = document.createElement('tr');
+                const domainCell = document.createElement('td');
+                const batchCell = document.createElement('td');
+
+                domainCell.innerText = domains[i];
+                batchCell.innerText = batchNumber;
+
+                row.appendChild(domainCell);
+                row.appendChild(batchCell);
+
+                resultBody.appendChild(row);
+            }
+        }
+
+        function exportTableToExcel(tableID, filename = ''){
+            let downloadLink;
+            const dataType = 'application/vnd.ms-excel';
+            const tableSelect = document.getElementById(tableID);
+            const tableHTML = tableSelect.outerHTML.replace(/ /g, '%20');
+            
+            // Specify file name
+            filename = filename ? `${filename}.xls` : 'domain_batches.xls';
+
+            // Create download link element
+            downloadLink = document.createElement("a");
+
+            document.body.appendChild(downloadLink);
+
+            if (navigator.msSaveOrOpenBlob) {
+                const blob = new Blob(['\ufeff', tableHTML], {
+                    type: dataType
+                });
+                navigator.msSaveOrOpenBlob(blob, filename);
+            } else {
+                // Create a link to the file
+                downloadLink.href = `data:${dataType}, ${tableHTML}`;
+
+                // Setting the file name
+                downloadLink.download = filename;
+
+                // Triggering the function
+                downloadLink.click();
+            }
+        }
+    </script>
+</body>
+</html>
